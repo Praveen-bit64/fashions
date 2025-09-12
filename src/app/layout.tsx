@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono, Inter, Roboto, Open_Sans, Courgette, Montez, Delius_Swash_Caps } from "next/font/google";
 import "./globals.css";
+import Header from "./components/Header";
+import Footer from "./components/Footer";
+import WelcomeOfferBan from "./components/WelcomeOfferBan";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -10,6 +13,43 @@ const geistSans = Geist({
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
+});
+
+// Example: Adding more custom Google Fonts
+const inter = Inter({
+  variable: "--font-inter",
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700"],
+});
+
+const courgette = Courgette({
+  variable: "--font-courgette",
+  subsets: ["latin"],
+  weight: ["400"],
+});
+
+const montez = Montez({
+  variable: "--font-montez",
+  subsets: ["latin"],
+  weight: ["400"],
+});
+
+const roboto = Roboto({
+  variable: "--font-roboto",
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "700"],
+});
+
+const openSans = Open_Sans({
+  variable: "--font-open-sans",
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700", "800"],
+});
+
+const deliusSwashCaps = Delius_Swash_Caps({
+  variable: "--font-delius-swash-caps",
+  subsets: ["latin"],
+  weight: ["400"],
 });
 
 export const metadata: Metadata = {
@@ -25,9 +65,12 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} ${inter.variable} ${roboto.variable} ${openSans.variable} ${courgette.variable} ${montez.variable} ${deliusSwashCaps.variable} antialiased`}
       >
+        <WelcomeOfferBan />
+        <Header />
         {children}
+        <Footer />
       </body>
     </html>
   );
