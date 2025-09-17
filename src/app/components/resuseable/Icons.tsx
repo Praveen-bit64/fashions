@@ -5,6 +5,9 @@ import { FaFacebook, FaHeart, FaInstagram, FaLinkedin, FaUser } from "react-icon
 import { FaXTwitter } from "react-icons/fa6";
 import { MdClose, MdHome, MdHourglassEmpty } from "react-icons/md";
 import { LuUserRoundPlus } from "react-icons/lu";
+import { CiSquareMinus, CiSquarePlus, CiTrash, CiCircleCheck } from "react-icons/ci";
+import { IoShieldCheckmarkOutline } from "react-icons/io5";
+import { FiRefreshCcw } from "react-icons/fi";
 
 export type AppIconName =
     | "search"
@@ -19,7 +22,14 @@ export type AppIconName =
     | "instagram"
     | "twitter"
     | "linkedin"
-    | "hourglassEmpty";
+    | "hourglassEmpty"
+    | "minus"
+    | "plus"
+    | "trash"
+    | "check"
+    | "shield"
+    | "refresh";
+
 
 const ICONS: Record<AppIconName, IconType> = {
     search: FiSearch,
@@ -35,6 +45,12 @@ const ICONS: Record<AppIconName, IconType> = {
     twitter: FaXTwitter,
     linkedin: FaLinkedin,
     hourglassEmpty: MdHourglassEmpty,
+    minus: CiSquareMinus,
+    plus: CiSquarePlus,
+    trash: CiTrash,
+    check: CiCircleCheck,
+    shield: IoShieldCheckmarkOutline,
+    refresh: FiRefreshCcw,
 };
 
 export type IconProps = {

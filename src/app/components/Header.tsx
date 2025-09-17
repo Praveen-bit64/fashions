@@ -1,10 +1,23 @@
 "use client"
 import Icons from "./resuseable/Icons";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
+import Cart from "./Cart";
+import Modal from "./resuseable/Modal";
+import UserForm from "./UserForm";
 
 const Header = () => {
     const [isSearchBar, setIsSearchBar] = useState(false);
     const [isSideBar, setIsSideBar] = useState(false);
+    const [toggleUserForm, setToggleUserForm] = useState(false);
+    console.log(toggleUserForm, "toggleUserForm");
+
+    const router = useRouter();
+    const [isCartOpen, setIsCartOpen] = useState(false);
+
+    const setModalStatusCallback = ({ isOpen }: { isOpen: boolean }) => {
+        setToggleUserForm(isOpen);
+    }
 
     const menuItems = [
         {
@@ -36,7 +49,7 @@ const Header = () => {
         )
     }
     return (
-        <header className="w-full h-[100px] bg-slate-50 shadow-md py-6 grid grid-cols-12 relative sticky top-0 z-9999">
+        <header className="w-full h-[100px] bg-slate-50 shadow-md py-6 grid grid-cols-12 sticky top-0 z-9999">
 
             {/* Particles */}
             <span className="absolute top-10 left-10 w-2 h-2 bg-emerald-400 rounded-full opacity-70 animate-particle"></span>
@@ -75,7 +88,10 @@ const Header = () => {
                                     key={item.name}
                                     className="text-start pl-6 py-3 rounded-lg cursor-pointer hover:bg-emerald-50 hover:text-emerald-600 transition-all duration-300 hover:translate-x-2 hover:shadow-md transform animate-slideInItem"
                                     style={{ animationDelay: `${index * 100}ms` }}
-                                    onClick={() => setIsSideBar(false)}
+                                    onClick={() => {
+                                        router.push(item.href);
+                                        setIsSideBar(false);
+                                    }}
                                 >
                                     <span className="relative group">
                                         {item.name}
@@ -90,16 +106,40 @@ const Header = () => {
                             <div className="flex justify-center gap-4">
                                 <Icons name="userRoundPlus" size={30} color="black" className="cursor-pointer hover:scale-110 transition-all duration-300 p-2 rounded-full hover:bg-emerald-50" title="login/register" />
                                 <Icons name="heart" size={30} color="black" className="cursor-pointer hover:scale-110 transition-all duration-300 p-2 rounded-full hover:bg-emerald-50" title="wishlist" />
-                                <Icons name="cart" size={30} color="black" className="cursor-pointer hover:scale-110 transition-all duration-300 p-2 rounded-full hover:bg-emerald-50" title="cart" />
+                                <Icons name="cart" onClick={() => setIsCartOpen(!isCartOpen)} size={30} color="black" className="cursor-pointer hover:scale-110 transition-all duration-300 p-2 rounded-full hover:bg-emerald-50" title="cart" />
                             </div>
                         </div>
                     </div>
                 </div>
             )}
 
+            {/* Mobile Layout */}
+            <div className="lg:hidden col-span-12 flex justify-between items-center px-4">
+                <h2
+                    onClick={() => router.push('/')}
+                    className="text-2xl sm:text-3xl font-bold text-slate-900 font-courgette cursor-pointer hover:scale-105 transition-all duration-300"
+                >
+                    Fashion
+                </h2>
+                <ul className="flex items-center gap-2 sm:gap-4">
+                    <li><Icons name="userRoundPlus" size={30} color="black" className={commanClasses.icon} title="login/register" /></li>
+                    <li><Icons name="heart" size={30} color="black" className={commanClasses.icon} title="wishlist" /></li>
+                    <li className="relative group z-1 cursor-pointer" onClick={() => router.push('/cart')}>
+                        <Icons name="cart" size={30} color="black" className={commanClasses.icon} title="cart" />
+                        <span className="absolute -top-2 -right-2 bg-emerald-500 text-white p-1 w-5 h-5 flex justify-center items-center text-xs font-semibold rounded-full group-hover:top-[-5px] group-hover:right-[-15px] transition-all duration-200">0</span>
+                    </li>
+                    <li onClick={() => setIsSideBar(!isSideBar)}><Icons name="menu" size={30} color="black" className={commanClasses.icon} title="menu" /></li>
+                </ul>
+            </div>
 
-            <h2 className="col-span-4 lg:col-span-3 text-3xl font-bold text-center text-slate-900 font-courgette cursor-pointer place-self-center hover:scale-105 transition-all duration-300 ml-2 lg:ml-0 ">Fashion</h2>
-            <div className="col-span-6 relative overflow-hidden lg:block hidden">
+            {/* Desktop Layout */}
+            <h2
+                onClick={() => router.push('/')}
+                className="hidden lg:block col-span-3 text-3xl font-bold text-center text-slate-900 font-courgette cursor-pointer place-self-center hover:scale-105 transition-all duration-300"
+            >
+                Fashion
+            </h2>
+            <div className="hidden lg:block col-span-6 relative overflow-hidden">
                 {/* SearchBar */}
                 <div
                     className={`absolute top-0 left-0 w-full transition-transform duration-500 ease-in-out ${isSearchBar ? "translate-x-0" : "translate-x-full"} flex justify-center items-center`}
@@ -109,11 +149,12 @@ const Header = () => {
 
                 {/* Menu */}
                 <ul
-                    className={`hidden absolute top-0 left-0 w-full lg:flex justify-center items-center gap-2 transition-transform duration-500 ease-in-out ${isSearchBar ? "-translate-x-full" : "translate-x-0"}`}
+                    className={`absolute top-0 left-0 w-full flex justify-center items-center gap-2 transition-transform duration-500 ease-in-out ${isSearchBar ? "-translate-x-full" : "translate-x-0"}`}
                 >
                     {menuItems.map((item) => (
                         <li
                             key={item.name}
+                            onClick={() => router.push(item.href)}
                             className={`${item.href === '/' ? 'bg-emerald-50 hover:bg-transparent text-emerald-600 font-bold' : ''} relative px-5 py-3 text-md group cursor-pointer duration-300 transition-all`}
                         >
                             {item.name}
@@ -128,15 +169,22 @@ const Header = () => {
                 </ul>
             </div>
 
-            <ul className="col-span-8 lg:col-span-3 flex justify-center items-center gap-4">
+            <ul className="hidden lg:flex col-span-3 justify-center items-center gap-4">
                 <li className="lg:block hidden" onClick={() => setIsSearchBar(!isSearchBar)}><Icons name={isSearchBar ? "close" : "search"} size={35} color={isSearchBar ? "red" : "black"} className={commanClasses.icon} title={isSearchBar ? "close" : "search"} /></li>
-                <li><Icons name="userRoundPlus" size={35} color="black" className={commanClasses.icon} title="login/register" /></li>
+                <li onClick={() => setToggleUserForm(!toggleUserForm)}><Icons name="userRoundPlus" size={35} color="black" className={commanClasses.icon} title="login/register" /></li>
                 <li><Icons name="heart" size={35} color="black" className={commanClasses.icon} title="wishlist" /></li>
-                <li className="relative group z-1"><Icons name="cart" size={35} color="black" className={commanClasses.icon} title="cart" />
+                <li className="relative group z-1 cursor-pointer" onClick={() => setIsCartOpen(!isCartOpen)}>
+                    <Icons name="cart" size={35} color="black" className={commanClasses.icon} title="cart" />
                     <span className="absolute -top-2 -right-2 bg-emerald-500 text-white p-1 w-6 h-6 flex justify-center items-center text-sm font-semibold rounded-full group-hover:top-[-5px] group-hover:right-[-15px] transition-all duration-200">0</span>
                 </li>
                 <li className="lg:hidden block" onClick={() => setIsSideBar(!isSideBar)}><Icons name="menu" size={35} color="black" className={commanClasses.icon} title="menu" /></li>
             </ul>
+            {isCartOpen && <Cart isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />}
+
+            {/** User Form */}
+            <Modal className="w-3/4 h-3/4 bg-white rounded-lg p-4 flex justify-center items-center gap-1" setModalStatusCallback={setModalStatusCallback} isOpen={toggleUserForm} >
+                <UserForm />
+            </Modal>
         </header>
     );
 }

@@ -31,9 +31,9 @@ const WelcomeOfferBan = () => {
     if (!isVisible) return null;
 
     return (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[9999] flex justify-center items-center p-4">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[9999] flex justify-center items-center p-2 sm:p-4 top-20">
             <div
-                className="relative w-full max-w-3xl rounded-2xl shadow-2xl overflow-hidden bg-neutral-900/90 border border-white/10"
+                className="relative w-full max-w-xs sm:max-w-md md:max-w-2xl lg:max-w-3xl xl:max-w-4xl rounded-xl sm:rounded-2xl shadow-2xl overflow-hidden bg-neutral-900/90 border border-white/10"
                 style={{
                     backgroundImage: "url(/fashion-offer-ban.jpg)",
                     backgroundSize: "cover",
@@ -43,11 +43,11 @@ const WelcomeOfferBan = () => {
                 {/* Close Button */}
                 <button
                     onClick={handleDismiss}
-                    className="absolute top-4 right-4 w-8 h-8 bg-white/90 hover:bg-white rounded-full flex items-center justify-center transition-colors shadow cursor-pointer z-10"
+                    className="absolute top-2 right-2 sm:top-4 sm:right-4 w-6 h-6 sm:w-8 sm:h-8 bg-white/90 hover:bg-white rounded-full flex items-center justify-center transition-colors shadow cursor-pointer z-10"
                     aria-label="Close offer"
                 >
                     <svg
-                        className="w-4 h-4 text-neutral-700 cursor-pointer"
+                        className="w-3 h-3 sm:w-4 sm:h-4 text-neutral-700 cursor-pointer"
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
@@ -62,30 +62,30 @@ const WelcomeOfferBan = () => {
                 </button>
 
                 {/* Content */}
-                <div className="relative flex items-center justify-center px-8 py-12 bg-gradient-to-r from-black/70 via-black/20 to-black/30">
-                    <div className="max-w-lg text-center">
+                <div className="relative flex items-center justify-center px-3 sm:px-4 md:px-6 lg:px-8 py-4 sm:py-6 md:py-8 lg:py-12 bg-gradient-to-r from-black/70 via-black/20 to-black/30">
+                    <div className="max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg text-center">
                         {/* Welcome Badge */}
-                        <div className="inline-block px-4 py-1.5 bg-white/10 text-white text-xs font-medium uppercase tracking-wider rounded-full mb-6">
+                        <div className="inline-block px-3 py-1 sm:px-4 sm:py-1.5 bg-white/10 text-white text-xs sm:text-sm font-medium uppercase tracking-wider rounded-full mb-4 sm:mb-6">
                             Welcome Offer
                         </div>
 
                         {/* Main Heading */}
-                        <h1 className="text-4xl font-bold text-white mb-2 tracking-tight">
+                        <h1 className="text-lg sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl font-bold text-white mb-1 sm:mb-2 tracking-tight">
                             Enjoy Up To
                         </h1>
-                        <div className="text-6xl font-extrabold text-white mb-6">
+                        <div className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-extrabold text-white mb-4 sm:mb-6">
                             60% OFF
                         </div>
 
                         {/* Description */}
-                        <p className="text-white/80 mb-8 text-base leading-relaxed">
+                        <p className="text-white/80 mb-6 sm:mb-8 text-sm sm:text-base leading-relaxed px-2">
                             On your first purchase. A limited-time exclusive for new
                             customers.
                         </p>
 
                         {/* Promo Code */}
-                        <div className="flex items-center justify-center gap-3 mb-8">
-                            <span className="bg-white text-neutral-900 px-5 py-2 rounded-md font-semibold tracking-wide text-lg shadow">
+                        <div className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-3 mb-6 sm:mb-8">
+                            <span className="bg-white text-neutral-900 px-4 py-2 sm:px-5 sm:py-2 rounded-md font-semibold tracking-wide text-base sm:text-lg shadow">
                                 {promoCode}
                             </span>
                             <button
@@ -93,7 +93,7 @@ const WelcomeOfferBan = () => {
                                 className="p-2 rounded-md border border-white/30 hover:bg-white/10 transition-colors"
                             >
                                 <svg
-                                    className="w-5 h-5 text-white"
+                                    className="w-4 h-4 sm:w-5 sm:h-5 text-white"
                                     fill="none"
                                     stroke="currentColor"
                                     viewBox="0 0 24 24"
@@ -112,23 +112,23 @@ const WelcomeOfferBan = () => {
                         </div>
 
                         {/* Buttons */}
-                        <div className="flex flex-col sm:flex-row gap-4">
+                        <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
                             <button
                                 onClick={handleClaimOffer}
-                                className="flex-1 bg-white text-neutral-900 px-6 py-3 rounded-lg font-semibold hover:bg-neutral-100 transition-colors shadow"
+                                className="flex-1 bg-white text-neutral-900 px-4 py-2.5 sm:px-6 sm:py-3 rounded-lg font-semibold hover:bg-neutral-100 transition-colors shadow text-sm sm:text-base"
                             >
                                 Claim Offer
                             </button>
                             <button
                                 onClick={handleDismiss}
-                                className="flex-1 bg-transparent text-white px-6 py-3 rounded-lg font-medium border border-white/30 hover:bg-white/10 transition-colors"
+                                className="flex-1 bg-transparent text-white px-4 py-2.5 sm:px-6 sm:py-3 rounded-lg font-medium border border-white/30 hover:bg-white/10 transition-colors text-sm sm:text-base"
                             >
                                 Maybe Later
                             </button>
                         </div>
 
                         {/* Terms */}
-                        <p className="text-xs text-white/60 mt-6">
+                        <p className="text-xs sm:text-sm text-white/60 mt-4 sm:mt-6 px-2">
                             *Valid only for first-time customers. Terms & conditions apply.
                         </p>
                     </div>

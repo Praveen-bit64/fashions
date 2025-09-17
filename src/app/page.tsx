@@ -4,6 +4,9 @@ import NewArrivals from "./components/NewArrivals";
 import PromoSection1 from "./components/PromoSection1";
 import PromoSection2 from "./components/PromoSection2";
 import Gallery from "./components/Gallery";
+import Modal from "./components/resuseable/Modal";
+import SectionHeader from "./components/resuseable/SectionHeader";
+import Link from "next/link";
 
 const page = () => {
   return (
