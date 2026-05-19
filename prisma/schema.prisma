@@ -1,0 +1,475 @@
+generator client {
+    provider = "prisma-client-js"
+}
+
+datasource db {
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
+}
+
+// ─── Auth / Users ────────────────────────────────────────────────
+
+enum Role {
+    CUSTOMER
+    TAILOR
+    PRODUCT_MANAGER
+    CUSTOMER_SUPPORT
+    SUPER_ADMIN
+}
+
+model User {
+    id            String    @id @default(uuid())
+    email         String    @unique
+    name          String
+    password      String?
+    role          Role      @default(CUSTOMER)
+    emailVerified DateTime?
+    image         String?
+    phone         String?
+
+    createdAt DateTime  @default(now())
+    updatedAt DateTime  @updatedAt
+    deletedAt DateTime?
+
+    accounts      Account[]
+    sessions      Session[]
+    addresses     Address[]
+    orders        Order[]
+    reviews       Review[]
+    wishlistItems WishlistItem[]
+    measurement   Measurement?
+    tailoringJobs TailoringJob[] @relation("AssignedTailor")
+
+    @@index([email])
+    @@index([role])
+    @@index([deletedAt])
+}
+
+// NextAuth standard tables
+model Account {
+    id                String  @id @default(cuid())
+    userId            String
+    type              String
+    provider          String
+    providerAccountId String
+    refresh_token     String? @db.Text
+    access_token      String? @db.Text
+    expires_at        Int?
+    token_type        String?
+    scope             String?
+    id_token          String? @db.Text
+    session_state     String?
+
+    user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+    @@unique([provider, providerAccountId])
+    @@index([userId])
+}
+
+model Session {
+    id           String   @id @default(cuid())
+    sessionToken String   @unique
+    userId       String
+    expires      DateTime
+
+    user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+    @@index([userId])
+}
+
+model VerificationToken {
+    identifier String
+    token      String   @unique
+    expires    DateTime
+
+    @@unique([identifier, token])
+}
+
+// ─── Catalog ──────────────────────────────────────────────────────
+
+enum ProductStatus {
+    DRAFT
+    PUBLISHED
+    ARCHIVED
+}
+
+enum MediaKind {
+    IMAGE
+    VIDEO
+}
+
+model Category {
+    id       String     @id @default(uuid())
+    slug     String     @unique
+    name     String
+    parentId String?
+    parent   Category?  @relation("CategoryTree", fields: [parentId], references: [id])
+    children Category[] @relation("CategoryTree")
+    products Product[]
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    @@index([slug])
+    @@index([parentId])
+}
+
+model Product {
+    id             String        @id @default(uuid())
+    slug           String        @unique
+    title          String
+    brand          String
+    description    String?       @db.Text
+    categoryId     String
+    category       Category      @relation(fields: [categoryId], references: [id])
+    basePrice      Int
+    discountPrice  Int?
+    status         ProductStatus @default(DRAFT)
+    isCustomizable Boolean       @default(true)
+    isNewArrival   Boolean       @default(false)
+    isBestSeller   Boolean       @default(false)
+    rating         Float         @default(0)
+    reviewCount    Int           @default(0)
+    metadata       Json?
+
+    variants      ProductVariant[]
+    media         ProductMedia[]
+    reviews       Review[]
+    orderItems    OrderItem[]
+    wishlistItems WishlistItem[]
+
+    createdAt DateTime  @default(now())
+    updatedAt DateTime  @updatedAt
+    deletedAt DateTime?
+
+    @@index([slug])
+    @@index([status])
+    @@index([categoryId])
+    @@index([deletedAt])
+    @@index([status, createdAt])
+}
+
+model ProductVariant {
+    id          String  @id @default(uuid())
+    productId   String
+    product     Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+    sku         String  @unique
+    size        String
+    color       String
+    priceDelta  Int     @default(0)
+    stockQty    Int     @default(0)
+    reservedQty Int     @default(0)
+
+    @@unique([productId, size, color])
+    @@index([productId])
+    @@index([sku])
+}
+
+model ProductMedia {
+    id        String    @id @default(uuid())
+    productId String
+    product   Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
+    url       String
+    publicId  String?
+    kind      MediaKind @default(IMAGE)
+    position  Int       @default(0)
+    alt       String?
+
+    @@index([productId])
+}
+
+// ─── Orders ──────────────────────────────────────────────────────
+
+enum OrderStatus {
+    PENDING
+    CONFIRMED
+    IN_PRODUCTION
+    READY_TO_SHIP
+    SHIPPED
+    DELIVERED
+    CANCELLED
+    RETURNED
+}
+
+enum PaymentMethod {
+    COD
+    UPI
+    CARD
+}
+
+enum PaymentStatus {
+    PENDING
+    AUTHORIZED
+    PAID
+    FAILED
+    REFUNDED
+}
+
+model Order {
+    id          String      @id @default(uuid())
+    orderNumber String      @unique
+    customerId  String
+    customer    User        @relation(fields: [customerId], references: [id])
+    status      OrderStatus @default(PENDING)
+
+    subtotal   Int
+    discount   Int     @default(0)
+    shipping   Int     @default(0)
+    total      Int
+    couponCode String?
+    notes      String?
+
+    shippingAddressId String?
+    shippingAddress   Address? @relation("ShippingAddress", fields: [shippingAddressId], references: [id])
+    billingAddressId  String?
+    billingAddress    Address? @relation("BillingAddress", fields: [billingAddressId], references: [id])
+
+    items         OrderItem[]
+    payment       Payment?
+    tailoring     TailoringJob?
+    customization AiCustomization?
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    @@index([customerId])
+    @@index([status])
+    @@index([orderNumber])
+    @@index([status, createdAt])
+}
+
+model OrderItem {
+    id              String  @id @default(uuid())
+    orderId         String
+    order           Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+    productId       String
+    product         Product @relation(fields: [productId], references: [id])
+    variantId       String?
+    title           String
+    brand           String
+    imageUrl        String
+    unitPrice       Int
+    quantity        Int
+    size            String
+    color           String
+    isCustom        Boolean @default(false)
+    customizationId String?
+
+    @@index([orderId])
+    @@index([productId])
+}
+
+model Payment {
+    id          String        @id @default(uuid())
+    orderId     String        @unique
+    order       Order         @relation(fields: [orderId], references: [id], onDelete: Cascade)
+    method      PaymentMethod
+    status      PaymentStatus @default(PENDING)
+    providerRef String?
+    amount      Int
+    paidAt      DateTime?
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+}
+
+model Address {
+    id         String  @id @default(uuid())
+    userId     String
+    user       User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+    fullName   String
+    phone      String
+    line1      String
+    line2      String?
+    city       String
+    state      String
+    postalCode String
+    country    String  @default("India")
+    isDefault  Boolean @default(false)
+
+    shippingOrders Order[] @relation("ShippingAddress")
+    billingOrders  Order[] @relation("BillingAddress")
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    @@index([userId])
+}
+
+// ─── Tailoring ───────────────────────────────────────────────────
+
+enum TailoringStatus {
+    PENDING
+    MEASUREMENT_RECEIVED
+    CUTTING
+    STITCHING
+    FINISHING
+    QC
+    DISPATCHED
+}
+
+model TailoringJob {
+    id             String          @id @default(uuid())
+    orderId        String          @unique
+    order          Order           @relation(fields: [orderId], references: [id], onDelete: Cascade)
+    assignedToId   String?
+    assignedTo     User?           @relation("AssignedTailor", fields: [assignedToId], references: [id])
+    status         TailoringStatus @default(PENDING)
+    measurementsAt DateTime?
+    cuttingAt      DateTime?
+    stitchingAt    DateTime?
+    finishingAt    DateTime?
+    qcAt           DateTime?
+    dispatchAt     DateTime?
+    notes          String?
+
+    events TailoringEvent[]
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    @@index([status])
+    @@index([assignedToId])
+    @@index([status, createdAt])
+}
+
+model TailoringEvent {
+    id         String           @id @default(uuid())
+    jobId      String
+    job        TailoringJob     @relation(fields: [jobId], references: [id], onDelete: Cascade)
+    fromStatus TailoringStatus?
+    toStatus   TailoringStatus
+    actorId    String
+    note       String?
+
+    createdAt DateTime @default(now())
+
+    @@index([jobId])
+}
+
+model Measurement {
+    id     String @id @default(uuid())
+    userId String @unique
+    user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+    data   Json
+    unit   String @default("cm")
+
+    updatedAt DateTime @updatedAt
+}
+
+// ─── AI Customizations ───────────────────────────────────────────
+
+model AiCustomization {
+    id               String   @id @default(uuid())
+    orderId          String?  @unique
+    order            Order?   @relation(fields: [orderId], references: [id])
+    basedOnProductId String
+    config           Json
+    faceImageUrl     String?
+    bodyImageUrl     String?
+    generatedUrl     String?
+    provider         String
+
+    createdAt DateTime @default(now())
+
+    @@index([basedOnProductId])
+}
+
+model AiQuota {
+    identityKey    String    @id
+    usedCount      Int       @default(0)
+    windowStartsAt DateTime?
+    updatedAt      DateTime  @updatedAt
+
+    @@index([windowStartsAt])
+}
+
+// ─── Coupons / Wishlist / Reviews / CMS / Notifications ─────────
+
+enum CouponType {
+    FLAT
+    PERCENT
+}
+
+model Coupon {
+    id          String     @id @default(uuid())
+    code        String     @unique
+    type        CouponType
+    value       Int
+    minSubtotal Int        @default(0)
+    validFrom   DateTime?
+    validUntil  DateTime?
+    usageLimit  Int?
+    usedCount   Int        @default(0)
+    active      Boolean    @default(true)
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    @@index([code])
+    @@index([active])
+}
+
+model WishlistItem {
+    id        String @id @default(uuid())
+    userId    String
+    user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+    productId String
+    product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+    createdAt DateTime @default(now())
+
+    @@unique([userId, productId])
+    @@index([userId])
+}
+
+enum ReviewStatus {
+    PENDING
+    APPROVED
+    HIDDEN
+}
+
+model Review {
+    id        String       @id @default(uuid())
+    productId String
+    product   Product      @relation(fields: [productId], references: [id], onDelete: Cascade)
+    userId    String
+    user      User         @relation(fields: [userId], references: [id])
+    rating    Int
+    title     String?
+    body      String?
+    status    ReviewStatus @default(PENDING)
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    @@index([productId, status])
+    @@index([userId])
+}
+
+model HomepageSection {
+    id       String  @id @default(uuid())
+    key      String  @unique
+    type     String
+    data     Json
+    position Int     @default(0)
+    active   Boolean @default(true)
+
+    updatedAt DateTime @updatedAt
+
+    @@index([active, position])
+}
+
+model Notification {
+    id        String    @id @default(uuid())
+    userId    String?
+    type      String
+    title     String
+    body      String?
+    data      Json?
+    readAt    DateTime?
+
+    createdAt DateTime @default(now())
+
+    @@index([userId, readAt])
+}
